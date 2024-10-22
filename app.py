@@ -100,9 +100,9 @@ def create_sticker_pdf(order_details, copycenters): # Создание стик�
     pdfmetrics.registerFont(TTFont('DejaVuSans', font_path_regular))
     pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', font_path_bold))
 
-    logo_path = os.path.join(app.root_path, 'static', 'picture', 'logo.png')
-    logo_delivery_path = os.path.join(app.root_path, 'static', 'picture', 'logo_delivery.jpg')
-    logo_prz_path = os.path.join(app.root_path, 'static', 'picture', 'logo_prz.png')
+    logo_path = os.path.join(app.root_path, 'static', 'pictures', 'logo.png')
+    logo_delivery_path = os.path.join(app.root_path, 'static', 'pictures', 'logo_delivery.jpg')
+    logo_prz_path = os.path.join(app.root_path, 'static', 'pictures', 'logo_prz.png')
     copycenter_number = None
 
     #Дату форматируем
