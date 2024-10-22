@@ -15,6 +15,10 @@ app = Flask(__name__)
 
 data_dir = os.path.join(app.root_path, 'data')
 os.makedirs(data_dir, exist_ok=True)
+stickers_dir = 'tmp/stickers'
+os.makedirs(stickers_dir, exist_ok=True)
+html_dir = 'tmp/_html'
+os.makedirs(html_dir, exist_ok=True)
 
 history_file = os.path.join(data_dir, 'history.json')
 number_file = os.path.join(data_dir, 'number.json')
@@ -38,7 +42,6 @@ def fetch_order_details_via_url(order_number, copycenters): # Парсинг
     if response.status_code != 200:
         print("Ошибка при загрузке страницы:", response.status_code)
         return None
-    html_dir = '_html'
     os.makedirs(html_dir, exist_ok=True)
     
     # Сохраняем HTML в локальный файл
@@ -78,7 +81,6 @@ def fetch_order_details_via_url(order_number, copycenters): # Парсинг
         return None
 
 def create_sticker_pdf(order_details, copycenters): # Создание стикеров
-    stickers_dir = 'stickers'
     os.makedirs(stickers_dir, exist_ok=True)
     pdf_filename = os.path.join(stickers_dir, f"{order_details['order_number']}.pdf")
 
@@ -98,8 +100,9 @@ def create_sticker_pdf(order_details, copycenters): # Создание стик�
     pdfmetrics.registerFont(TTFont('DejaVuSans', font_path_regular))
     pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', font_path_bold))
 
-    logo_path = os.path.join(app.root_path, 'static', 'logo.png')
-    logo_delivery_path = os.path.join(app.root_path, 'static', 'logo_delivery.jpg')
+    logo_path = os.path.join(app.root_path, 'static', 'picture', 'logo.png')
+    logo_delivery_path = os.path.join(app.root_path, 'static', 'picture', 'logo_delivery.jpg')
+    logo_prz_path = os.path.join(app.root_path, 'static', 'picture', 'logo_prz.png')
     copycenter_number = None
 
     #Дату форматируем
@@ -171,11 +174,15 @@ def create_sticker_pdf(order_details, copycenters): # Создание стик�
             if os.path.exists(logo_delivery_path):
                 c.drawImage(logo_delivery_path, 10, 15, width=0.6 * inch, height=0.5 * inch)
         else:
-            c.setFont("DejaVuSans-Bold", 60) #54
-            if int(copycenter_number) < 10:
-                c.drawString(20, 10, copycenter_number)
+            if copycenter_number == '0':
+                if os.path.exists(logo_prz_path):
+                    c.drawImage(logo_prz_path, 10, 15, width=0.6 * inch, height=0.5 * inch)
             else:
-                c.drawString(10, 10, copycenter_number)
+                c.setFont("DejaVuSans-Bold", 60) #54
+                if int(copycenter_number) < 10:
+                    c.drawString(10, 10, '0' + copycenter_number)
+                else:
+                    c.drawString(10, 10, copycenter_number)
 
             
 
@@ -251,7 +258,7 @@ def play_sound():
 
 @app.route('/stickers/<filename>')
 def serve_stickers(filename):
-    return send_from_directory('stickers', filename)
+    return send_from_directory(stickers_dir, filename)
 
 @app.route('/')
 def index():
