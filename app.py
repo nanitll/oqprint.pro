@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import pytz
 from datetime import datetime
 from waitress import serve
 from bs4 import BeautifulSoup
@@ -182,9 +183,7 @@ def create_sticker_pdf(order_details, copycenters): # Создание стик�
                 if int(copycenter_number) < 10:
                     c.drawString(10, 10, '0' + copycenter_number)
                 else:
-                    c.drawString(10, 10, copycenter_number)
-
-            
+                    c.drawString(10, 10, copycenter_number)           
 
         # Контактная информация
         c.setFont("DejaVuSans-Bold", 7)
@@ -209,6 +208,11 @@ def save_history(order_number, timestamp): # Сохранение истории
     # Сохраняем обновленную историю
     with open(history_file, 'w', encoding='utf-8') as f:
         json.dump(history, f, indent=4, ensure_ascii=False)
+        
+@app.route('/get_history/<order_number>', methods=['GET'])
+def get_history(order_number):
+    history = load_history()
+    return jsonify(history.get(order_number, []))
 
 @app.route('/generate_stickers', methods=['POST'])
 def generate_stickers():
@@ -219,18 +223,14 @@ def generate_stickers():
     if order_details:
         pdf_filename = create_sticker_pdf(order_details, copycenters)
         
-        # Сохраняем историю пробития стикеров
-        timestamp = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+        # Сохраняем историю пробития стикеров с учетом московского времени
+        moscow_tz = pytz.timezone('Europe/Moscow')
+        timestamp = datetime.now(moscow_tz).strftime('%d.%m.%Y %H:%M:%S')
         save_history(order_number, timestamp)
         
         return os.path.basename(pdf_filename)
     else:
         return "Ошибка при генерации стикеров.", 500
-
-@app.route('/get_history/<order_number>', methods=['GET'])
-def get_history(order_number):
-    history = load_history()
-    return jsonify(history.get(order_number, []))
 
 @app.route('/play_sound', methods=['POST'])
 def play_sound():
