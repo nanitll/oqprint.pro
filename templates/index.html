@@ -117,6 +117,17 @@
     </div>
 
     <script>
+        // Устанавливаем фокус на поле ввода при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            focusOnInput();
+        });
+
+        // Функция для установки фокуса на поле ввода
+        function focusOnInput() {
+            const input = document.getElementById('order_number');
+            input.focus();
+        }
+
         // Обработка формы для генерации стикеров
         document.getElementById('orderForm').onsubmit = async function(event) {
             event.preventDefault();
@@ -160,6 +171,9 @@
                 document.getElementById('status').className = 'error';
                 document.getElementById('status').textContent = 'Ошибка при генерации стикеров.';
             }
+
+            // Устанавливаем фокус на поле ввода
+            focusOnInput();
         };
 
         // Обработка кнопки "Показать историю"
@@ -174,8 +188,10 @@
             } else {
                 alert('Пожалуйста, введите номер штрихкода.');
             }
-        };
 
+            // Устанавливаем фокус на поле ввода
+            focusOnInput();
+        };
 
         // Функция для загрузки и отображения истории
         async function loadHistory(orderNumber) {
@@ -203,7 +219,20 @@
             } else {
                 alert('Не удалось получить историю.');
             }
+
+            // Устанавливаем фокус на поле ввода
+            focusOnInput();
         }
+
+        // Обработка события клика по документу для установки фокуса на поле ввода
+        document.addEventListener('click', focusOnInput);
+        
+        // Обработка события blur на pdfViewer
+        const pdfViewer = document.getElementById('pdfViewer');
+        pdfViewer.addEventListener('blur', focusOnInput); // Устанавливаем фокус при потере фокуса
+
+        // Принудительное возвращение фокуса на поле ввода через регулярные интервалы
+        setInterval(focusOnInput, 500); // Каждые 500 мс
     </script>
 </body>
 </html>
