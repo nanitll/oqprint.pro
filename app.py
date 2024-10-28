@@ -11,6 +11,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import mm
 from flask import Flask, render_template, request, send_from_directory, jsonify
+import re
 
 app = Flask(__name__)
 
@@ -34,6 +35,10 @@ def load_history():
         with open(history_file, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {}
+
+def sanitize_filename(filename):
+    # Удаляет символы, которые могут быть проблемными в названиях файлов
+    return re.sub(r'[<>:"/\\|?*]', '_', filename)
 
 def fetch_order_details_via_url(order_number, copycenters): # Парсинг
     url = f"https://is-oq-print.3328432.ru/get_deal_attachments/{order_number}"
@@ -83,7 +88,7 @@ def fetch_order_details_via_url(order_number, copycenters): # Парсинг
 
 def create_sticker_pdf(order_details, copycenters): # Создание стикеров
     os.makedirs(stickers_dir, exist_ok=True)
-    pdf_filename = os.path.join(stickers_dir, f"{order_details['order_number']}.pdf")
+    pdf_filename = os.path.join(stickers_dir, f"{sanitize_filename(order_details['order_number'])}.pdf")
 
     if os.path.exists(pdf_filename):
         base, ext = os.path.splitext(pdf_filename)
