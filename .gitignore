@@ -2,3 +2,4 @@
 /BACKUP
 /tmp/_html/*
 /tmp/stickers/*
+udo systemctl restart nginx
