@@ -12,6 +12,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import mm
 from flask import Flask, render_template, request, send_from_directory, jsonify
 import re
+from db import create_table, save_history, load_history  # Импортируем функции из db.py
 
 app = Flask(__name__)
 
@@ -22,19 +23,14 @@ os.makedirs(stickers_dir, exist_ok=True)
 html_dir = 'tmp/_html'
 os.makedirs(html_dir, exist_ok=True)
 
-history_file = os.path.join(data_dir, 'history.json')
 number_file = os.path.join(data_dir, 'number.json')
+
+create_table()
 
 def load_copycenters(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         copycenters = json.load(f)
     return copycenters
-
-def load_history():
-    if os.path.exists(history_file):
-        with open(history_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return {}
 
 def sanitize_filename(filename):
     # Удаляет символы, которые могут быть проблемными в названиях файлов
@@ -201,23 +197,10 @@ def create_sticker_pdf(order_details, copycenters): # Создание стик�
     c.save()
     return pdf_filename
 
-def save_history(order_number, timestamp): # Сохранение истории
-    history = load_history()
-    if order_number in history:
-        # Добавляем новый таймстамп к существующему заказу
-        history[order_number].append(timestamp)
-    else:
-        # Создаем новый заказ с первым таймстампом
-        history[order_number] = [timestamp]
-    
-    # Сохраняем обновленную историю
-    with open(history_file, 'w', encoding='utf-8') as f:
-        json.dump(history, f, indent=4, ensure_ascii=False)
-        
 @app.route('/get_history/<order_number>', methods=['GET'])
 def get_history(order_number):
-    history = load_history()
-    return jsonify(history.get(order_number, []))
+    history = load_history(order_number)
+    return jsonify(history)
 
 @app.route('/generate_stickers', methods=['POST'])
 def generate_stickers():
